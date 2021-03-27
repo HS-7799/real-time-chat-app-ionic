@@ -7,14 +7,14 @@
         </ion-buttons>
         <ion-title>{{ title }}</ion-title>
         <ion-buttons slot="end" >
-            <ion-button @click="logoutUser">
+            <ion-button @click="logoutUser" color="primary" >
                 <ion-icon slot="icon-only" :icon="logOut"></ion-icon>
             </ion-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
     
-    <ion-content :fullscreen="true">
+    <ion-content :fullscreen="true"  >
         <slot />
     </ion-content>
   </ion-page>

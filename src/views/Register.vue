@@ -6,6 +6,10 @@
         </p>
         <ion-list>
           <ion-item>
+            <ion-label position="floating">Name</ion-label>
+            <ion-input type="text" required v-model="name" ></ion-input>
+          </ion-item>
+          <ion-item>
             <ion-label position="floating">Email</ion-label>
             <ion-input type="email" required v-model="email" ></ion-input>
           </ion-item>
@@ -42,6 +46,8 @@ import {
 import firebase from '@firebase/app';
 require('firebase/auth');
 
+import axios from 'axios'
+
 export default {
   data()
   {
@@ -49,6 +55,7 @@ export default {
       waitResponse : false,
       error :null,
       email : '',
+      name : '',
       password : '',
       passwordConfirmation : ''
     }
@@ -70,7 +77,11 @@ export default {
         this.waitResponse = true
         try
         {
-          await firebase.auth().createUserWithEmailAndPassword(this.email,this.password)
+          const user = await firebase.auth().createUserWithEmailAndPassword(this.email,this.password)
+          await axios.post('https://chat-project-ionic-default-rtdb.europe-west1.firebasedatabase.app/users.json',{
+            id : user.user.uid,
+            name : this.name
+          })
           this.waitResponse = false
           this.$router.push({name : 'Users'})
         }      
@@ -88,7 +99,10 @@ export default {
   {
     isValid()
     {
-      return this.email != '' && this.password === this.passwordConfirmation && this.password != '' && this.passwordConfirmation != ''
+      return this.email != '' &&
+             this.name != '' &&
+             this.password === this.passwordConfirmation &&
+             this.password != '' && this.passwordConfirmation != ''
     }
   }
 

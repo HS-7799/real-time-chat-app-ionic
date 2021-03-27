@@ -27,6 +27,12 @@ const routes = [
     component: () => import('../views/Users.vue'),
     meta : {requiresAuth : true}
   },
+  {
+    path: '/messages/:id',
+    name: 'Messages',
+    component: () => import('../views/Messages.vue'),
+    meta : {requiresAuth : true}
+  },
 ]
 
 const router = createRouter({
