@@ -1,17 +1,20 @@
 <template>
     <guest-layout title="Sign In">
+      <p style="color : red" v-if="error" >
+          {{ error.message }}
+        </p>
       <form  class="form-in" @submit.prevent="loginUser">
         <ion-list>
           <ion-item>
             <ion-label position="floating">Email</ion-label>
-            <ion-input type="email" v-model="form.email" required ></ion-input>
+            <ion-input type="email" required v-model="email" ></ion-input>
           </ion-item>
           <ion-item>
             <ion-label position="floating">Password</ion-label>
-            <ion-input type="password" v-model="form.password" required ></ion-input>
+            <ion-input type="password" required v-model="password" ></ion-input>
           </ion-item>
-          <ion-button expand="block" type="submit"  >
-            <span v-if="!waitResponse" >Sign In</span>
+          <ion-button expand="block" type="submit" :disabled="!isValid"  >
+            <span v-if="!waitResponse"  >Sign In</span>
             <ion-spinner v-else ></ion-spinner>
           </ion-button>
         </ion-list>
@@ -33,15 +36,17 @@ import {
   IonSpinner
 } from '@ionic/vue'
 
+import firebase from '@firebase/app';
+require('firebase/auth');
+
 export default {
   data()
   {
     return {
       waitResponse : false,
-      form : {
-        email : '',
-        password : '',
-      }
+      email : '',
+      password : '',
+      error : null
     }
   },
   components : {
@@ -54,11 +59,29 @@ export default {
     IonSpinner
   },
   methods : {
-    loginUser()
+    async loginUser()
     {
-      console.log(this.form);
       this.waitResponse = true
+      try
+      {
+        await firebase.auth().signInWithEmailAndPassword(this.email,this.password)
+        this.waitResponse = false
+        this.$router.replace({name : 'Users'})
+      }      
+      catch(err)
+      {
+        this.error = err
+        this.password = ''
+        this.waitResponse = false;
+      }
       
+    }
+  },
+  computed : 
+  {
+    isValid()
+    {
+      return this.password != '' && this.email != ''
     }
   }
 

@@ -24,9 +24,30 @@ import '@ionic/vue/css/display.css';
 import './theme/variables.css';
 import './theme/styles.css';
 
-const app = createApp(App)
-  .use(IonicVue)
-  .use(router);
+import firebase from 'firebase/app';
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBS9h9clr776z4MmGVZrKXKXO9nTL3YI9Y",
+  authDomain: "chat-project-ionic.firebaseapp.com",
+  projectId: "chat-project-ionic",
+  storageBucket: "chat-project-ionic.appspot.com",
+  messagingSenderId: "733873954674",
+  appId: "1:733873954674:web:efe82f6ff0a75ca55f47eb"
+};
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+
+let app;
+
+firebase.auth().onAuthStateChanged(() => {
+  if(!app)
+  {
+    app = createApp(App)
+      .use(IonicVue)
+      .use(router);
+  }
+})
   
 router.isReady().then(() => {
   app.mount('#app');

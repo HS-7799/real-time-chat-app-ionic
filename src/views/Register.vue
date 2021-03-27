@@ -1,24 +1,23 @@
 <template>
     <guest-layout title="Sign Up">
       <form class="form-in" @submit.prevent="registerUser" >
+        <p style="color : red" v-if="error" >
+          {{ error.message }}
+        </p>
         <ion-list>
           <ion-item>
-            <ion-label position="floating">Name</ion-label>
-            <ion-input type="text" v-model="name" required ></ion-input>
-          </ion-item>
-          <ion-item>
             <ion-label position="floating">Email</ion-label>
-            <ion-input type="email" v-model="email" required ></ion-input>
+            <ion-input type="email" required v-model="email" ></ion-input>
           </ion-item>
           <ion-item>
             <ion-label position="floating">Password</ion-label>
-            <ion-input type="password" v-model="password" required ></ion-input>
+            <ion-input type="password" required v-model="password" ></ion-input>
           </ion-item>
           <ion-item>
             <ion-label position="floating">Password confirmation</ion-label>
-            <ion-input type="password" v-model="passwordConfirmation" required ></ion-input>
+            <ion-input type="password" required v-model="passwordConfirmation" ></ion-input>
           </ion-item>
-          <ion-button expand="block" type="submit">
+          <ion-button expand="block" type="submit" :disabled="!isValid" >
             <span v-if="!waitResponse" >Sign Up</span>
             <ion-spinner v-else ></ion-spinner>
           </ion-button>
@@ -40,12 +39,15 @@ import {
   IonSpinner
 } from '@ionic/vue'
 
+import firebase from '@firebase/app';
+require('firebase/auth');
+
 export default {
   data()
   {
     return {
       waitResponse : false,
-      name : '',
+      error :null,
       email : '',
       password : '',
       passwordConfirmation : ''
@@ -61,18 +63,32 @@ export default {
     IonSpinner
   },
   methods : {
-    registerUser()
+    async registerUser()
     {
-      const form = {
-        name : this.name,
-        email : this.email,
-        password : this.password
+      if(this.isValid)
+      {
+        this.waitResponse = true
+        try
+        {
+          await firebase.auth().createUserWithEmailAndPassword(this.email,this.password)
+          this.waitResponse = false
+          this.$router.push({name : 'Users'})
+        }      
+        catch(err)
+        {
+          this.error = err
+          this.password = ''
+          this.passwordConfirmation = ''
+          this.waitResponse = false;
+        }
       }
-
-      console.log(form);
-
-      this.waitResponse = true
-      
+    }
+  },
+  computed:
+  {
+    isValid()
+    {
+      return this.email != '' && this.password === this.passwordConfirmation && this.password != '' && this.passwordConfirmation != ''
     }
   }
 
