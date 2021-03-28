@@ -84,6 +84,11 @@ export default {
             name : this.name
           })
           this.waitResponse = false
+          this.error = null
+          this.email = ''
+          this.name =  ''
+          this.password =  ''
+          this.passwordConfirmation =  ''
           this.$router.push({name : 'Users'})
         }      
         catch(err)

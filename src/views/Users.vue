@@ -10,6 +10,10 @@
         <ion-item v-for="user in users" :key="user.id">
           <ion-label>{{ user.name }}</ion-label>
         </ion-item>
+        <ion-item v-if="users.length == 0">
+          <ion-label>No users available</ion-label>
+        </ion-item>
+        
       </ion-list>
     </auth-layout>
 </template>
@@ -59,14 +63,17 @@ export default {
       const auth = firebase.auth().currentUser
 
       const db = firebase.firestore()
-      const snapshot = await db.collection('users').get();
-      snapshot.forEach((doc) => {
-        this.users.push(doc.data())
-        if(doc.data().id === auth.uid)
-        {
-          localStorage.setItem('sender',doc.data().name) 
-        }
-      });
+      db.collection('users').onSnapshot((querySnapshot) => {
+        const allUsers = []
+        querySnapshot.forEach((doc) => {
+          allUsers.push(doc.data())
+          if(doc.data().id === auth.uid)
+          {
+            localStorage.setItem('sender',doc.data().name) 
+          }
+        });
+        this.users = allUsers
+      })
       
     },
     messageUser()
