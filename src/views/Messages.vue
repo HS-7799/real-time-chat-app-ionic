@@ -5,29 +5,34 @@
           
           <div class="mesgs" >
             <div class="msg_history">
-              <div class="incoming_msg">
-                
-                <div class="received_msg">
-                  <div class="received_withd_msg">
-                    <p>Test which is a new approach to have all
-                      solutions</p>
+              <div v-for="(message,index) in messages" :key="index" >
+              
+                <div class="incoming_msg" v-if="message.from !== fromId" >
+                  
+                  <div class="received_msg">
+                    <div class="received_withd_msg">
+                      <span class="time_date">{{ message.senderName }}</span>
+                      <p>{{ message.body }}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div class="outgoing_msg">
-                <div class="sent_msg">
-                  <p>Test which is a new approach to have all
-                    solutions</p>
-                </div>
+                <div class="outgoing_msg" v-else >
+                  <div class="sent_msg">
+                    <span class="time_date">{{ message.senderName }}</span>
+                    <p>{{ message.body }}</p>
+                  </div>
+                </div> 
+              
+                
               </div>
             </div>
             <ion-grid>
               <ion-row style="box-shadow : 1px 1px 2px lightgray" >
                 <ion-col size="9" >
-                  <ion-input class="write_msg" v-model="message" placeholder="Type a message" ></ion-input>
+                  <ion-input class="write_msg" v-model="body" placeholder="Type a message" ></ion-input>
                 </ion-col>
                 <ion-col size="3">
-                  <ion-button color="primary" @click="sendMessage" :disabled="message == ''"  >
+                  <ion-button color="primary" @click="sendMessage" :disabled="body.trim() === ''"  >
                         <ion-icon slot="icon-only" :icon="send"></ion-icon>
                   </ion-button>
                 </ion-col>
@@ -53,7 +58,10 @@ import {
 } from '@ionic/vue'
 
 import { send } from 'ionicons/icons';
-
+// import axios from 'axios'
+import firebase from '@firebase/app';
+require('firebase/auth');
+require('firebase/firestore');
 
 export default {
 
@@ -61,9 +69,10 @@ export default {
   {
     return {
       send,
-      toUser : this.$route.params.id,
-      from : 'jdjknf',
-      message : ''
+      fromId : '',
+      sender : '',
+      body : '',
+      messages : [],
     }
   },
   components : {
@@ -78,11 +87,42 @@ export default {
 
   },
   methods : {
-    sendMessage()
+    async sendMessage()
     {
-      console.log("from " + this.from + " to " + this.toUser + " mess : " + this.message );
-      this.message = ''
+      if(this.body.trim() !== '')
+      {
+        const message = {
+          from : this.fromId,
+          senderName : this.sender,
+          body : this.body,
+          createdAt : new Date()
+        }
+        const db = firebase.firestore()
+        await db.collection('messages').add(message)
+        const messagesBox = document.querySelector('.msg_history')
+        messagesBox.scrollTop = messagesBox.scrollHeight
+        this.body = ''
+      }
+    },
+    async getMessages()
+    {
+      const db = firebase.firestore()
+      db.collection('messages').orderBy('createdAt').onSnapshot((querySnapshot) => {
+        let a = []
+        querySnapshot.forEach((doc) => {
+          a.push(doc.data())
+        });
+        this.messages = a
+      })
     }
+  },
+  created()
+  {
+      const auth = firebase.auth().currentUser
+      this.fromId = auth.uid
+      this.sender = localStorage.getItem('sender')
+      
+      this.getMessages()
   }
 }
 </script>
@@ -97,6 +137,7 @@ export default {
 .mesgs
 {
   padding: 10px;
+  background-color:  lightgray;
 }
 
 .container{max-width:700px; margin:auto;}
@@ -159,7 +200,6 @@ img{ max-width:100%;}
 }
 .inbox_chat { height: 550px; overflow-y: scroll;}
 
-.active_chat{ background:#ebebeb;}
 
 .incoming_msg_img {
   display: inline-block;
@@ -172,7 +212,7 @@ img{ max-width:100%;}
   width: 92%;
  }
  .received_withd_msg p {
-  background: #ebebeb none repeat scroll 0 0;
+  background: white none repeat scroll 0 0;
   border-radius: 3px;
   color: #646464;
   font-size: 14px;

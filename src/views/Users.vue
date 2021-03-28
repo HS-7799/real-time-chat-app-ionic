@@ -1,13 +1,14 @@
 <template>
     <auth-layout title="Users" >
+      <ion-buttons >
+            <ion-button @click="messageUser" color="primary" >
+              Start chatting
+              <ion-icon :icon="chatbox"></ion-icon>
+            </ion-button>
+      </ion-buttons>
       <ion-list>
         <ion-item v-for="user in users" :key="user.id">
           <ion-label>{{ user.name }}</ion-label>
-          <ion-buttons slot="end" >
-            <ion-button @click="messageUser(user.id)" color="primary" >
-                <ion-icon slot="icon-only" :icon="chatbox"></ion-icon>
-            </ion-button>
-          </ion-buttons>
         </ion-item>
       </ion-list>
     </auth-layout>
@@ -25,16 +26,17 @@ import {
 } from '@ionic/vue'
 
 import { chatbox } from 'ionicons/icons';
-
-import axios from 'axios'
+import firebase from '@firebase/app';
+require('firebase/firestore');
 
 export default {
-
+  name : 'users',
   data()
   {
     return {
       users:  [],
-      chatbox
+      chatbox,
+      authId : null
     }
   },
   components : {
@@ -47,19 +49,31 @@ export default {
   },
   created()
   {
-    axios.get('https://chat-project-ionic-default-rtdb.europe-west1.firebasedatabase.app/users.json')
-    .then((res) => {
-      this.users = res.data
-    }).catch((err) => {
-      console.log(err);
-    });
+    this.getAllUser()
   },
+
   methods : {
-    messageUser(userId)
+    async getAllUser()
     {
-      this.$router.push('/messages/' + userId)
+
+      const auth = firebase.auth().currentUser
+
+      const db = firebase.firestore()
+      const snapshot = await db.collection('users').get();
+      snapshot.forEach((doc) => {
+        this.users.push(doc.data())
+        if(doc.data().id === auth.uid)
+        {
+          localStorage.setItem('sender',doc.data().name) 
+        }
+      });
+      
+    },
+    messageUser()
+    {
+      this.$router.push('/messages/')
     }
-  }
+  },
 }
 </script>
 

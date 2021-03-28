@@ -48,6 +48,7 @@ firebase.auth().onAuthStateChanged(() => {
       .use(router);
   }
 })
+
   
 router.isReady().then(() => {
   app.mount('#app');

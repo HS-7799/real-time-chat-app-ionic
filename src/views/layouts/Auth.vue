@@ -62,8 +62,8 @@ export default defineComponent({
       {
           try
           {
-              const res = await firebase.auth().signOut();
-              console.log(res);
+              await firebase.auth().signOut();
+              localStorage.clear()
               this.$router.push({name : 'Login'})
           }
           catch(err)

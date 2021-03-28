@@ -45,8 +45,8 @@ import {
 
 import firebase from '@firebase/app';
 require('firebase/auth');
+require('firebase/firestore');
 
-import axios from 'axios'
 
 export default {
   data()
@@ -78,7 +78,8 @@ export default {
         try
         {
           const user = await firebase.auth().createUserWithEmailAndPassword(this.email,this.password)
-          await axios.post('https://chat-project-ionic-default-rtdb.europe-west1.firebasedatabase.app/users.json',{
+          const db = firebase.firestore()
+          await db.collection('users').add({
             id : user.user.uid,
             name : this.name
           })
